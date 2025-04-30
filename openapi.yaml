@@ -1,0 +1,92 @@
+openapi: 3.0.3
+info:
+  title: SMS Gateway API
+  version: 1.0.0
+  description: Send SMS via Engineering Fabric SMS Gateway
+servers:
+  - url: https://api.engineering-fabric.codebuckets.in/api/v1
+paths:
+  /sms-gateway/send:
+    post:
+      summary: Send an SMS message
+      description: |
+        Enqueue an SMS send request using a template and variable interpolation.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendSmsRequest'
+            example:
+              senderId: "87a171ab-3bd3-4672-bd19-801965e5d63c"
+              type: "template"
+              to:
+                - "917667593045"
+              templateId: "662a1beed6fc053b3c58b3b2"
+              variables:
+                - "1234"
+      responses:
+        '200':
+          description: SMS send request accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messageId:
+                    type: string
+                    description: Unique identifier for the enqueued message
+                  status:
+                    type: string
+                    description: Request status (e.g., "queued")
+        '400':
+          description: Invalid request payload
+        '401':
+          description: Unauthorized — invalid or missing bearer token
+        '500':
+          description: Internal server error
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SendSmsRequest:
+      type: object
+      required:
+        - senderId
+        - type
+        - to
+        - templateId
+      properties:
+        senderId:
+          type: string
+          format: uuid
+          description: UUID of the SMS sender identity
+        type:
+          type: string
+          enum:
+            - text
+            - template
+            - bulk
+            - unicode
+            - otp
+            - unicodeotp
+          description: Type of SMS to send
+        to:
+          type: array
+          items:
+            type: string
+            description: Recipient phone number in E.164 format
+          description: List of recipients
+        templateId:
+          type: string
+          description: Identifier of the SMS template to use
+        variables:
+          type: array
+          items:
+            type: string
+          description: Template variables to interpolate into the message

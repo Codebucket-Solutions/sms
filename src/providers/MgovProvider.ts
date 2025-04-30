@@ -5,13 +5,13 @@ import { createHash } from 'crypto';
 import { stringify } from 'querystring';
 
 interface MgovConfig extends ProviderConfig {
-    authKey: string;
+    username: string;
     /** Department login password */
     password: string;
     /** Secure key from portal */
     secureKey: string;
     /** Default DLT template ID */
-    templateId: string;
+    templateId?: string;
     /** Full gateway URL (optional) */
     url: string;
 }
@@ -33,12 +33,12 @@ export class MgovProvider extends BaseProvider {
             ? this.toUnicode(opts.content || '')
             : this.interpolate(opts.content || '', variables);
         const svcType = this.getServiceType(type);
-        const key = this.sha512(this.cfg.authKey + this.cfg.senderId + msg + this.cfg.secureKey);
+        const key = this.sha512(this.cfg.username + this.cfg.senderId + msg + this.cfg.secureKey);
         const data: any = {
             senderid: this.cfg.senderId,
             content: msg,
             smsservicetype: svcType,
-            username: this.cfg.authKey,
+            username: this.cfg.username,
             password: this.sha1(this.cfg.password),
             key,
             templateid: opts.templateId || this.cfg.templateId
